@@ -1,5 +1,10 @@
-var RSS, _, request, cheerio, rss, moment, fs, feed, tmpl;
+var argv, RSS, _, request, cheerio, rss, moment, fs, feed, tmpl;
 
+argv = require("optimist").usage("Usage: $0")
+                          .demand("p")
+                          .alias("p", "path")
+                          .describe("p", "Output file")
+                          .argv;
 RSS = require("rss");
 _ = require("underscore");
 request = require("request");
@@ -59,7 +64,7 @@ request("https://news.ycombinator.com/", function (err, resp, body) {
         guid: date.format("YYYY-MM-DD ha")
     });
 
-    fs.writeFile("rss.xml", feed.xml(), function (err) {
+    fs.writeFile(argv.p, feed.xml(), function (err) {
         if (err !== null) {
             console.error("Feed could not be written to disk:", err);
         } else {

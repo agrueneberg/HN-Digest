@@ -3,6 +3,7 @@
     "description": "Periodically creates a Hacker News digest.",
     "version": "0.0.1",
     "dependencies": {
+        "optimist": "0.4.0",
         "rss": "0.0.4",
         "underscore": "1.4.4",
         "request": "2.21.0",
