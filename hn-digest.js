@@ -45,8 +45,6 @@ fs.readFile(argv.p, function (err, data) {
 
         articles = [];
 
-        description = "<ol>";
-
         $("td.title a").each(function (idx, el) {
             var $headline, $comments, idPattern;
             $headline = $(el);
@@ -72,27 +70,35 @@ fs.readFile(argv.p, function (err, data) {
             return previousArticles.indexOf(article.link) == -1;
         });
 
-        articles.forEach(function (article) {
-            description += tmpl(article);
-        });
+        if (articles.length > 0) {
 
-        description += "</ol>";
+            description = "<ol>";
 
-        date = moment();
+            articles.forEach(function (article) {
+                description += tmpl(article);
+            });
 
-        feed.item({
-            title: "HN Digest",
-            description: description,
-            guid: date.format("YYYY-MM-DD ha")
-        });
+            description += "</ol>";
 
-        fs.writeFile(argv.p, feed.xml(), function (err) {
-            if (err !== null) {
-                console.error("Feed could not be written to disk:", err);
-            } else {
-                console.log("Feed was written to disk.");
-            }
-        });
+            date = moment();
+
+            feed.item({
+                title: "HN Digest",
+                description: description,
+                guid: date.format("YYYY-MM-DD ha")
+            });
+
+            fs.writeFile(argv.p, feed.xml(), function (err) {
+                if (err !== null) {
+                    console.error("Feed could not be written to disk:", err);
+                } else {
+                    console.log("Feed was written to disk.");
+                }
+            });
+
+        } else {
+            console.log("Feed was not written to disk: there are no new articles.");
+        }
 
     });
 
