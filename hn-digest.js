@@ -14,15 +14,25 @@ moment = require("moment");
 
 fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
 
-    var previousArticles, $previousDigest;
+    var previousArticles, previousDigests;
 
     previousArticles = [];
+    previousDigests = [];
 
     // Try to open existing feed to get a list of previous articles.
     if (err === null) {
-        $previousDigest = $("item description", data).text();
-        $("li a.article", $previousDigest).each(function (idx, el) {
-            previousArticles.push($(el).attr("href"));
+        previousDigests = $("item", data).map(function (idx, previousDigest) {
+            var $previousDigest;
+            $previousDigest = $(previousDigest);
+            return {
+                guid: $("guid", $previousDigest).text(),
+                description: $("description", $previousDigest).text()
+            };
+        });
+        previousDigests.forEach(function (previousDigest) {
+            $("li a.article", previousDigest.description).each(function (idx, el) {
+                previousArticles.push($(el).attr("href"));
+            });
         });
     }
 
@@ -36,18 +46,23 @@ fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
 
     request("https://news.ycombinator.com/", function (err, resp, body) {
 
-        var articles, description, date;
+        var articles, description;
 
         articles = [];
 
         $("td.title a", body).each(function (idx, el) {
-            var $headline, $comments, idPattern;
+            var $headline, href, $comments, idPattern;
             $headline = $(el);
-            $comments = $("a", $headline.parent().parent().next()).last();
-         // Ignore `More` button.
-            if ($headline.attr("href") === "news2") {
+            href = $headline.attr("href");
+         // Only push article if it is new.
+            if (previousArticles.indexOf(href) > -1) {
                 return;
             }
+         // Ignore `More` button.
+            if (href === "news2") {
+                return;
+            }
+            $comments = $("a", $headline.parent().parent().next()).last();
          // Ignore ads (articles without comments).
             if ($comments.length === 0) {
                 return;
@@ -56,13 +71,8 @@ fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
             articles.push({
                 id: idPattern.exec($comments.attr("href"))[1],
                 title: $headline.text(),
-                link: $headline.attr("href")
+                link: href
             });
-        });
-
-        // Ignore old articles.
-        articles = articles.filter(function (article) {
-            return previousArticles.indexOf(article.link) == -1;
         });
 
         if (articles.length > 0) {
@@ -75,12 +85,22 @@ fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
 
             description += "</ol>";
 
-            date = moment();
-
             feed.item({
                 title: "HN Digest",
                 description: description,
-                guid: date.format("YYYY-MM-DD ha")
+                guid: moment().format("YYYY-MM-DD ha")
+            });
+
+            // Append previous digests, but limit the number of items.
+            if (previousDigests.length > 20) {
+                previousDigests.pop();
+            }
+            previousDigests.forEach(function (previousDigest) {
+                feed.item({
+                    title: "HN Digest",
+                    description: previousDigest.description,
+                    guid: previousDigest.guid
+                });
             });
 
             fs.writeFile(argv.p, feed.xml(), function (err) {
