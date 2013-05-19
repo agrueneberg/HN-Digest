@@ -35,7 +35,7 @@ fs.readFile(argv.p, function (err, data) {
         site_url: "https://news.ycombinator.com"
     });
 
-    tmpl = _.template('<li><a href="<%= link %>" class="article"><%= title %></a> &mdash; <a href="https://news.ycombinator.com/item?id=<%= id %>">Comments</a></li>');
+    tmpl = _.template('<li><a href="<%= link %>" class="article"><%= title %></a> <a href="https://news.ycombinator.com/item?id=<%= id %>">[comments]</a></li>');
 
     request("https://news.ycombinator.com/", function (err, resp, body) {
 
