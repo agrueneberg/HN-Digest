@@ -1,4 +1,4 @@
-var argv, fs, cheerio, RSS, _, request, rss, moment, feed, tmpl;
+var argv, fs, $, RSS, _, request, rss, moment, feed, tmpl;
 
 argv = require("optimist").usage("Usage: $0")
                           .demand("p")
@@ -6,26 +6,23 @@ argv = require("optimist").usage("Usage: $0")
                           .describe("p", "Output file")
                           .argv;
 fs = require("fs");
-cheerio = require("cheerio");
+$ = require("cheerio");
 RSS = require("rss");
 _ = require("underscore");
 request = require("request");
 moment = require("moment");
 
-fs.readFile(argv.p, function (err, data) {
+fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
 
-    var previousArticles, $previousFeed, $previousDigest;
+    var previousArticles, $previousDigest;
 
     previousArticles = [];
 
     // Try to open existing feed to get a list of previous articles.
     if (err === null) {
-        $previousFeed = cheerio.load(data);
-        $previousDigest = cheerio.load($previousFeed("item description").text());
-        $previousDigest("li a.article").each(function (idx, el) {
-            var $article;
-            $article = $previousDigest(el);
-            previousArticles.push($article.attr("href"));
+        $previousDigest = $("item description", data).text();
+        $("li a.article", $previousDigest).each(function (idx, el) {
+            previousArticles.push($(el).attr("href"));
         });
     }
 
@@ -39,13 +36,11 @@ fs.readFile(argv.p, function (err, data) {
 
     request("https://news.ycombinator.com/", function (err, resp, body) {
 
-        var $, articles, description, date;
-
-        $ = cheerio.load(body);
+        var articles, description, date;
 
         articles = [];
 
-        $("td.title a").each(function (idx, el) {
+        $("td.title a", body).each(function (idx, el) {
             var $headline, $comments, idPattern;
             $headline = $(el);
             $comments = $("a", $headline.parent().parent().next()).last();
