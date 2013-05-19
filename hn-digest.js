@@ -95,7 +95,7 @@ fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
             feed.item({
                 title: "HN Digest",
                 description: description,
-                guid: moment().format("YYYY-MM-DD ha")
+                guid: "agrueneberg/hn-digest/" + moment().format("X")
             });
 
             // Append previous digests, but limit the number of items.
