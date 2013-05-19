@@ -1,9 +1,16 @@
 var argv, fs, $, RSS, _, request, rss, moment, feed, tmpl;
 
 argv = require("optimist").usage("Usage: $0")
-                          .demand("p")
-                          .alias("p", "path")
-                          .describe("p", "Output file")
+                          .option("p", {
+                              demand: true,
+                              alias: "path",
+                              describe: "Output path"
+                           })
+                          .option("l", {
+                              default: 20,
+                              alias: "limit",
+                              describe: "Number of digests per feed (default: 20)"
+                           })
                           .argv;
 fs = require("fs");
 $ = require("cheerio");
@@ -92,7 +99,7 @@ fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
             });
 
             // Append previous digests, but limit the number of items.
-            if (previousDigests.length > 20) {
+            if (previousDigests.length >= argv.l) {
                 previousDigests.pop();
             }
             previousDigests.forEach(function (previousDigest) {
