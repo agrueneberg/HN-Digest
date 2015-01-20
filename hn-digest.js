@@ -3,18 +3,18 @@
 
     var argv, fs, $, RSS, _, request, moment, feed, tmpl;
 
-    argv = require("optimist").usage("Usage: $0")
-                              .option("p", {
-                                  demand: true,
-                                  alias: "path",
-                                  describe: "Output path"
-                               })
-                              .option("l", {
-                                  default: 20,
-                                  alias: "limit",
-                                  describe: "Number of digests per feed (default: 20)"
-                               })
-                              .argv;
+    argv = require("yargs").usage("Usage: $0")
+                           .option("p", {
+                               demand: true,
+                               alias: "path",
+                               describe: "Output path"
+                            })
+                           .option("l", {
+                               default: 20,
+                               alias: "limit",
+                               describe: "Number of digests per feed (default: 20)"
+                            })
+                           .argv;
     fs = require("fs");
     $ = require("cheerio");
     RSS = require("rss");
