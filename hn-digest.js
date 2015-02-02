@@ -24,21 +24,24 @@
 
     fs.readFile(argv.p, { encoding: "utf8" }, function (err, data) {
 
-        var previousArticles, previousDigests;
+        var $digest, previousDigests, previousArticles;
 
-        previousArticles = [];
         previousDigests = [];
+        previousArticles = [];
 
         // Try to open existing feed to get a list of previous articles.
         if (err === null) {
-            previousDigests = $("item", data).map(function (idx, previousDigest) {
+            $digest = $.load(data, {
+                xmlMode: true
+            });
+            previousDigests = $digest("item").map(function (idx, el) {
                 var $previousDigest;
-                $previousDigest = $(previousDigest);
+                $previousDigest = $(el);
                 return {
                     guid: $("guid", $previousDigest).text(),
                     description: $("description", $previousDigest).text()
                 };
-            });
+            }).get();
             previousDigests.forEach(function (previousDigest) {
                 $("li a.article", previousDigest.description).each(function (idx, el) {
                     previousArticles.push($(el).attr("href"));
